@@ -1,0 +1,284 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */
+options
+{
+  static = true;
+}
+
+PARSER_BEGIN(Basic)
+package edu.itsco;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
+public class Basic
+{
+
+  private static AdministraVariables adminVariables;
+  
+  public static void main(String args []) throws ParseException
+  {
+    //Basic parser = new Basic(System.in);
+    try {
+      	adminVariables = new AdministraVariables();
+	    Basic parser = new Basic(
+	      new FileInputStream("entrada.txt"));
+	    System.out.println("Bienvenidos al compilador 603-SA");
+	    parser.principal();
+	    System.out.println("Compilo correctamente...");
+  	}catch(FileNotFoundException fex) {
+		System.err.println(
+		  "No se puede abrir el archivo");
+  	}catch(Exception e) {
+		System.err.println(e.getMessage());
+  	}
+  }
+}
+
+PARSER_END(Basic)
+
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+}
+
+TOKEN: {
+  < INICIO: "inicio" >
+| < FIN: "fin" >
+
+| < IMPRIMIR: "imprimir" >
+| < LEER: "leer" >
+
+| < SI: "si" >
+| < ENTONCES: "entonces" >
+| < SINO: "sino" >
+
+| < DESDE: "desde" >
+| < HASTA: "hasta" >
+| < SIGUIENTE: "siguiente" >
+
+| < HACER: "hacer" >
+| < MIENTRAS: "mientras" >
+
+| < VAR: "var" >
+| < ENTERO: "entero" >
+| < DECIMAL: "decimal" >
+| < CADENA: "cadena" >
+
+| < SELECCIONA: "selecciona" >
+| < CASO: "caso" >
+| < ROMPE: "rompe" >
+}
+
+TOKEN:{
+  < SUMA: "+" >
+| < RESTA: "-" >
+| < MULTI: "*" >
+| < DIV: "/" >
+| < RESIDUO: "%" >
+| < IGUAL: "=" >
+
+| < MAYOR: ">" >
+| < MENOR: "<" >
+
+| < AND: "&&" >
+| < OR: "||" >
+| < NOT: "!" >
+
+| < DP: ":" >
+| < AP: "(" >
+| < CP: ")" >
+| < AC: "[" >
+| < CC: "]" >
+}
+
+TOKEN:{
+  < #digito: ["0"-"9"] >
+| < #letra: ["a"-"z","A"-"Z"] >
+
+| < ID: (< letra >|"_") (< letra >|< digito >|"_")* >
+| < VALOR_ENTERO: (< digito >)+ >
+| < VALOR_DECIMAL: (< digito >)+"."(< digito >)+ >
+| < VALOR_CADENA: "\"" (~["\""])* "\"" >
+}
+
+void principal()throws SemanticException: {
+} {
+	< INICIO > < ID >
+		sentencias()
+	< FIN >
+}
+
+void sentencias()throws SemanticException:{
+}{
+	(	  declararVariable()
+	| gramaticaImprimir()
+	| gramaticaLeer()
+	| gramaticaIf()
+	| gramaticaSwitch()
+	| gramaticaFor()
+	| gramaticaWhile()
+	| gramaticaDo()
+	| gramaticaAsignacion()
+	)+
+}
+
+void declararVariable() throws SemanticException: {
+  Token id;
+  boolean inicializada = false;
+} {
+	< VAR > id = < ID > < DP > tipoDato()
+	[ < IGUAL > valor() { inicializada = true; }]
+	{
+	  Variable v = new Variable(id.image);
+	  v.setInicializada(inicializada);
+	  adminVariables.addVariable(v);
+	}
+}
+
+void tipoDato(): {
+} {
+	< ENTERO >|< DECIMAL >|< CADENA >
+}
+
+void valor() throws SemanticException: {
+	Token id;
+}
+{
+	< VALOR_ENTERO >
+	| < VALOR_CADENA >
+	| < VALOR_DECIMAL >
+	| id = < ID > {
+		Variable v = new Variable(id.image);
+		adminVariables.existeVariable(v);
+		adminVariables.validarInicializada(v);
+	}
+}
+
+void gramaticaImprimir() throws SemanticException: {
+} {
+	< IMPRIMIR > <AP > valor()
+		(< SUMA > valor())* < CP >
+}
+
+void gramaticaLeer()throws SemanticException: {
+	Token id;
+}
+{
+	< LEER > < AP > id = < ID > < CP >
+	{
+		Variable v = new Variable(id.image);
+		adminVariables.existeVariable(v);
+		//aquí tambien se inicializan las variables
+		adminVariables.inicializaVariable(v);
+	}
+}
+
+void gramaticaAsignacion() throws SemanticException: {
+	Token id;
+}
+{
+	id = < ID >
+	{
+		Variable v = new Variable(id.image);
+		adminVariables.existeVariable(v);
+	}
+	< IGUAL > operacion()
+	{
+	  	adminVariables.inicializaVariable(v);
+	} 
+}
+
+void operacion() throws SemanticException: {
+} {
+	( valor() | opParentesis() )
+	( opAritmetico() ( valor() | opParentesis() ) )*
+}
+
+void opAritmetico(): {
+} {
+	< SUMA > | < RESTA > | < MULTI > | < DIV >
+| < RESIDUO >
+}
+
+void opParentesis() throws SemanticException: {
+} {
+	< AP > operacion() < CP >
+}
+
+void gramaticaIf() throws SemanticException: {
+}{
+	< SI > condicion() < ENTONCES >
+		sentencias()
+	[ <SINO > sentencias() ]
+	< FIN > < SI > 
+}
+
+void condicion()throws SemanticException: {
+} {
+	condicionSimple()
+	( opLogico() condicionSimple() )*
+}
+
+void opLogico(): {
+} {
+	< AND > < OR >
+}
+
+void condicionSimple() throws SemanticException: {
+} {
+	valor() opRelacional() valor()
+}
+
+void opRelacional(): {
+} {
+	< MAYOR > [ <IGUAL > ] 
+    | < MENOR > [ <IGUAL > | < MAYOR > ]
+	| < IGUAL > < IGUAL >
+}
+
+void gramaticaFor() throws SemanticException: {
+  Token id;
+} {
+	< DESDE > id = < ID > < IGUAL > valor()
+    < HASTA > valor()
+    {
+		Variable v = new Variable(id.image);
+		adminVariables.existeVariable(v);
+		adminVariables.inicializaVariable(v);
+	}
+	   sentencias()
+	< SIGUIENTE >
+}
+
+void gramaticaWhile() throws SemanticException: {
+} {
+	< MIENTRAS > condicion() < HACER >
+	  sentencias()
+	< FIN >  <MIENTRAS >
+}
+
+void gramaticaDo() throws SemanticException: {
+} {
+	< HACER >
+		sentencias()
+	< HASTA > condicion()
+}
+
+void gramaticaSwitch() throws SemanticException: {
+	Token id;
+}
+{
+	< SELECCIONA > id = < ID > {
+		Variable v = new Variable(id.image);
+		adminVariables.existeVariable(v);
+		adminVariables.validarInicializada(v);
+	}
+	( < CASO > < DP > sentencias() < ROMPE > )+
+	[ < SINO > < DP > sentencias() ]
+	< FIN > < SELECCIONA >
+}
+
