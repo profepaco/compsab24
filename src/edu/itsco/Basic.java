@@ -99,16 +99,19 @@ public class Basic implements BasicConstants {
 }
 
   static final public void declararVariable() throws ParseException, SemanticException {Token id;
+  Token tipo;
+  String tipo2;
   boolean inicializada = false;
     jj_consume_token(VAR);
     id = jj_consume_token(ID);
     jj_consume_token(DP);
-    tipoDato();
+    tipo = tipoDato();
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case IGUAL:{
       jj_consume_token(IGUAL);
-      valor();
+      tipo2 = valor();
 inicializada = true;
+          adminVariables.validaTipos(tipo.image, tipo2);
       break;
       }
     default:
@@ -117,21 +120,22 @@ inicializada = true;
     }
 Variable v = new Variable(id.image);
           v.setInicializada(inicializada);
+          v.setTipoDato(tipo.image);
           adminVariables.addVariable(v);
 }
 
-  static final public void tipoDato() throws ParseException {
+  static final public Token tipoDato() throws ParseException {Token tipo;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case ENTERO:{
-      jj_consume_token(ENTERO);
+      tipo = jj_consume_token(ENTERO);
       break;
       }
     case DECIMAL:{
-      jj_consume_token(DECIMAL);
+      tipo = jj_consume_token(DECIMAL);
       break;
       }
     case CADENA:{
-      jj_consume_token(CADENA);
+      tipo = jj_consume_token(CADENA);
       break;
       }
     default:
@@ -139,20 +143,26 @@ Variable v = new Variable(id.image);
       jj_consume_token(-1);
       throw new ParseException();
     }
+{if ("" != null) return tipo;}
+    throw new Error("Missing return statement in function");
 }
 
-  static final public void valor() throws ParseException, SemanticException {Token id;
+  static final public String valor() throws ParseException, SemanticException {Token id;
+        String valor;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case VALOR_ENTERO:{
       jj_consume_token(VALOR_ENTERO);
+valor = "entero";
       break;
       }
     case VALOR_CADENA:{
       jj_consume_token(VALOR_CADENA);
+valor = "cadena";
       break;
       }
     case VALOR_DECIMAL:{
       jj_consume_token(VALOR_DECIMAL);
+valor = "decimal";
       break;
       }
     case ID:{
@@ -160,6 +170,7 @@ Variable v = new Variable(id.image);
 Variable v = new Variable(id.image);
                 adminVariables.existeVariable(v);
                 adminVariables.validarInicializada(v);
+                valor = adminVariables.getTipoDato(v);
       break;
       }
     default:
@@ -167,6 +178,8 @@ Variable v = new Variable(id.image);
       jj_consume_token(-1);
       throw new ParseException();
     }
+{if ("" != null) return valor;}
+    throw new Error("Missing return statement in function");
 }
 
   static final public void gramaticaImprimir() throws ParseException, SemanticException {
@@ -341,10 +354,12 @@ adminVariables.inicializaVariable(v);
     jj_consume_token(OR);
 }
 
-  static final public void condicionSimple() throws ParseException, SemanticException {
-    valor();
+  static final public void condicionSimple() throws ParseException, SemanticException {String tipo1;
+  String tipo2;
+    tipo1 = valor();
     opRelacional();
-    valor();
+    tipo2 = valor();
+adminVariables.validaTipos(tipo1, tipo2);
 }
 
   static final public void opRelacional() throws ParseException {

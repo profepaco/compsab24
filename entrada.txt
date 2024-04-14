@@ -1,10 +1,11 @@
 inicio ejemplo
-  var n1: entero
-  var n2: entero = 5
+  var n1: entero = 5
+  var n2: entero
   imprimir("Dame n1")
   leer(n1)
   imprimir("Dame n2")
-  si n1>"Hola mundo" entonces
+  leer(n2)
+  si n1 > 5 entonces
     imprimir("N1 es mayor")
   sino
   	imprimir("N2 es mayor")

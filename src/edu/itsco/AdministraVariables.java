@@ -48,4 +48,19 @@ public class AdministraVariables {
 			}
 		}
 	}
+	
+	public void validaTipos(String tipo1, String tipo2) {
+		if(!tipo1.equals(tipo2)) {
+			System.err.println("No son iguales los tipos de datos");
+		}
+	}
+	
+	public String getTipoDato(Variable v) {
+		String tipo = "";
+		int index = variables.indexOf(v);
+		if(index > -1) {
+			tipo = variables.get(index).getTipoDato();
+		}
+		return tipo;
+	}
 }

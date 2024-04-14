@@ -128,33 +128,50 @@ void sentencias()throws SemanticException:{
 
 void declararVariable() throws SemanticException: {
   Token id;
+  Token tipo;
+  String tipo2;
   boolean inicializada = false;
 } {
-	< VAR > id = < ID > < DP > tipoDato()
-	[ < IGUAL > valor() { inicializada = true; }]
+	< VAR > id = < ID > < DP > tipo = tipoDato()
+	[ < IGUAL > tipo2 = valor() {
+	  inicializada = true;
+	  adminVariables.validaTipos(tipo.image, tipo2);
+	}]
 	{
 	  Variable v = new Variable(id.image);
 	  v.setInicializada(inicializada);
+	  v.setTipoDato(tipo.image);
 	  adminVariables.addVariable(v);
 	}
 }
 
-void tipoDato(): {
+Token tipoDato(): {
+  Token tipo;
 } {
-	< ENTERO >|< DECIMAL >|< CADENA >
+	(	  tipo = < ENTERO >| tipo = < DECIMAL >| tipo = < CADENA >
+	)
+	{
+	  return tipo;
+	}
 }
 
-void valor() throws SemanticException: {
+String valor() throws SemanticException: {
 	Token id;
+	String valor;
 }
 {
-	< VALOR_ENTERO >
-	| < VALOR_CADENA >
-	| < VALOR_DECIMAL >
+	(	  < VALOR_ENTERO > { valor = "entero"; }
+	| < VALOR_CADENA > { valor = "cadena"; }
+	| < VALOR_DECIMAL > { valor = "decimal"; }
 	| id = < ID > {
 		Variable v = new Variable(id.image);
 		adminVariables.existeVariable(v);
 		adminVariables.validarInicializada(v);
+		valor = adminVariables.getTipoDato(v);
+	  }
+	)
+	{
+		return valor;
 	}
 }
 
@@ -229,8 +246,13 @@ void opLogico(): {
 }
 
 void condicionSimple() throws SemanticException: {
+  String tipo1;
+  String tipo2;
 } {
-	valor() opRelacional() valor()
+	tipo1 = valor() opRelacional() tipo2 = valor()
+	{
+		adminVariables.validaTipos(tipo1, tipo2);
+	} 
 }
 
 void opRelacional(): {
