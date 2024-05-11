@@ -49,9 +49,32 @@ public class AdministraVariables {
 		}
 	}
 	
-	public void validaTipos(String tipo1, String tipo2) {
+	public void validaTipos(String tipo1, 
+			String tipo2) throws SemanticException {
 		if(!tipo1.equals(tipo2)) {
-			System.err.println("No son iguales los tipos de datos");
+			//System.err.println("No son iguales los tipos de datos");
+			throw new SemanticException(
+					SemanticException.TIPOS_DATOS_NO_COMPATIBLES,
+					tipo1, tipo2);
+		}
+	}
+	
+	public void operacionInvalidaConCadenas(
+			String tipo) throws SemanticException {
+		if(tipo.equals("cadena")) {
+			throw new SemanticException(
+					"Las cadenas solo se pueden concatenar"
+					);
+		}
+	}
+	
+	public void tiposDeDatosIncompatibles(String tipo1, String tipo2)
+	throws SemanticException{
+		if(!tipo1.equals("cadena")) {
+			if(!tipo1.equals(tipo2)) {
+				throw new SemanticException("El tipo de datos: "+tipo1
+						+"no es compatible con el tipo de datos: "+tipo2);
+			}
 		}
 	}
 	

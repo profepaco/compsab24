@@ -7,17 +7,20 @@ import java.io.FileNotFoundException;
 public class Basic implements BasicConstants {
 
   private static AdministraVariables adminVariables;
+  private static GeneraCodigo generaCodigo;
 
   public static void main(String args []) throws ParseException
   {
     //Basic parser = new Basic(System.in);
     try {
         adminVariables = new AdministraVariables();
+        generaCodigo = new GeneraCodigo("salida.c");
             Basic parser = new Basic(
               new FileInputStream("entrada.txt"));
             System.out.println("Bienvenidos al compilador 603-SA");
             parser.principal();
             System.out.println("Compilo correctamente...");
+            generaCodigo.terminarGeneracion();
         }catch(FileNotFoundException fex) {
                 System.err.println(
                   "No se puede abrir el archivo");
@@ -215,25 +218,28 @@ Variable v = new Variable(id.image);
 }
 
   static final public void gramaticaAsignacion() throws ParseException, SemanticException {Token id;
+        String tipoDato;
     id = jj_consume_token(ID);
 Variable v = new Variable(id.image);
                 adminVariables.existeVariable(v);
+                tipoDato = adminVariables.getTipoDato(v);
     jj_consume_token(IGUAL);
-    operacion();
+    operacion(tipoDato);
 adminVariables.inicializaVariable(v);
 }
 
-  static final public void operacion() throws ParseException, SemanticException {
+  static final public void operacion(String tipoDato) throws ParseException, SemanticException {String tipoDato2;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case ID:
     case VALOR_ENTERO:
     case VALOR_DECIMAL:
     case VALOR_CADENA:{
-      valor();
+      tipoDato2 = valor();
+adminVariables.tiposDeDatosIncompatibles(tipoDato,tipoDato2);
       break;
       }
     case AP:{
-      opParentesis();
+      opParentesis(tipoDato);
       break;
       }
     default:
@@ -256,17 +262,18 @@ adminVariables.inicializaVariable(v);
         jj_la1[7] = jj_gen;
         break label_3;
       }
-      opAritmetico();
+      opAritmetico(tipoDato);
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
       case ID:
       case VALOR_ENTERO:
       case VALOR_DECIMAL:
       case VALOR_CADENA:{
-        valor();
+        tipoDato2 = valor();
+adminVariables.tiposDeDatosIncompatibles(tipoDato,tipoDato2);
         break;
         }
       case AP:{
-        opParentesis();
+        opParentesis(tipoDato);
         break;
         }
       default:
@@ -277,38 +284,52 @@ adminVariables.inicializaVariable(v);
     }
 }
 
-  static final public void opAritmetico() throws ParseException {
+  static final public void opAritmetico(String tipoDato) throws ParseException, SemanticException {
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case SUMA:{
       jj_consume_token(SUMA);
       break;
       }
-    case RESTA:{
-      jj_consume_token(RESTA);
-      break;
-      }
-    case MULTI:{
-      jj_consume_token(MULTI);
-      break;
-      }
-    case DIV:{
-      jj_consume_token(DIV);
-      break;
-      }
+    case RESTA:
+    case MULTI:
+    case DIV:
     case RESIDUO:{
-      jj_consume_token(RESIDUO);
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case RESTA:{
+        jj_consume_token(RESTA);
+        break;
+        }
+      case MULTI:{
+        jj_consume_token(MULTI);
+        break;
+        }
+      case DIV:{
+        jj_consume_token(DIV);
+        break;
+        }
+      case RESIDUO:{
+        jj_consume_token(RESIDUO);
+        break;
+        }
+      default:
+        jj_la1[9] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+adminVariables.
+                operacionInvalidaConCadenas(tipoDato);
       break;
       }
     default:
-      jj_la1[9] = jj_gen;
+      jj_la1[10] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
 }
 
-  static final public void opParentesis() throws ParseException, SemanticException {
+  static final public void opParentesis(String tipoDato) throws ParseException, SemanticException {
     jj_consume_token(AP);
-    operacion();
+    operacion(tipoDato);
     jj_consume_token(CP);
 }
 
@@ -324,7 +345,7 @@ adminVariables.inicializaVariable(v);
       break;
       }
     default:
-      jj_la1[10] = jj_gen;
+      jj_la1[11] = jj_gen;
       ;
     }
     jj_consume_token(FIN);
@@ -341,7 +362,7 @@ adminVariables.inicializaVariable(v);
         break;
         }
       default:
-        jj_la1[11] = jj_gen;
+        jj_la1[12] = jj_gen;
         break label_4;
       }
       opLogico();
@@ -372,7 +393,7 @@ adminVariables.validaTipos(tipo1, tipo2);
         break;
         }
       default:
-        jj_la1[12] = jj_gen;
+        jj_la1[13] = jj_gen;
         ;
       }
       break;
@@ -392,14 +413,14 @@ adminVariables.validaTipos(tipo1, tipo2);
           break;
           }
         default:
-          jj_la1[13] = jj_gen;
+          jj_la1[14] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
         break;
         }
       default:
-        jj_la1[14] = jj_gen;
+        jj_la1[15] = jj_gen;
         ;
       }
       break;
@@ -410,7 +431,7 @@ adminVariables.validaTipos(tipo1, tipo2);
       break;
       }
     default:
-      jj_la1[15] = jj_gen;
+      jj_la1[16] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -464,7 +485,7 @@ Variable v = new Variable(id.image);
         break;
         }
       default:
-        jj_la1[16] = jj_gen;
+        jj_la1[17] = jj_gen;
         break label_5;
       }
     }
@@ -476,7 +497,7 @@ Variable v = new Variable(id.image);
       break;
       }
     default:
-      jj_la1[17] = jj_gen;
+      jj_la1[18] = jj_gen;
       ;
     }
     jj_consume_token(FIN);
@@ -493,7 +514,7 @@ Variable v = new Variable(id.image);
   static public Token jj_nt;
   static private int jj_ntk;
   static private int jj_gen;
-  static final private int[] jj_la1 = new int[18];
+  static final private int[] jj_la1 = new int[19];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -501,10 +522,10 @@ Variable v = new Variable(id.image);
 	   jj_la1_init_1();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x239380,0x239380,0x20000000,0x1c0000,0x0,0x1000000,0x0,0x1f000000,0x0,0x1f000000,0x800,0x0,0x20000000,0x60000000,0x60000000,0xe0000000,0x400000,0x800,};
+	   jj_la1_0 = new int[] {0x239380,0x239380,0x20000000,0x1c0000,0x0,0x1000000,0x0,0x1f000000,0x0,0x1e000000,0x1f000000,0x800,0x0,0x20000000,0x60000000,0x60000000,0xe0000000,0x400000,0x800,};
 	}
 	private static void jj_la1_init_1() {
-	   jj_la1_1 = new int[] {0x400,0x400,0x0,0x0,0x3c00,0x0,0x3c10,0x0,0x3c10,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,};
+	   jj_la1_1 = new int[] {0x400,0x400,0x0,0x0,0x3c00,0x0,0x3c10,0x0,0x3c10,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,};
 	}
 
   /** Constructor with InputStream. */
@@ -525,7 +546,7 @@ Variable v = new Variable(id.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -539,7 +560,7 @@ Variable v = new Variable(id.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -556,7 +577,7 @@ Variable v = new Variable(id.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -574,7 +595,7 @@ Variable v = new Variable(id.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -590,7 +611,7 @@ Variable v = new Variable(id.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -599,7 +620,7 @@ Variable v = new Variable(id.image);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 18; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 19; i++) jj_la1[i] = -1;
   }
 
   static private Token jj_consume_token(int kind) throws ParseException {
@@ -655,7 +676,7 @@ Variable v = new Variable(id.image);
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
 	 }
-	 for (int i = 0; i < 18; i++) {
+	 for (int i = 0; i < 19; i++) {
 	   if (jj_la1[i] == jj_gen) {
 		 for (int j = 0; j < 32; j++) {
 		   if ((jj_la1_0[i] & (1<<j)) != 0) {

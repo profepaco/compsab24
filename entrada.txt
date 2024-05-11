@@ -1,11 +1,14 @@
 inicio ejemplo
   var n1: entero = 5
   var n2: entero
+  var mensaje: cadena
   imprimir("Dame n1")
   leer(n1)
   imprimir("Dame n2")
   leer(n2)
-  si n1 > 5 entonces
+  mensaje = "El resultado es: "+n1
+  n1 = 5 + 7
+  si n1 > n2 entonces
     imprimir("N1 es mayor")
   sino
   	imprimir("N2 es mayor")

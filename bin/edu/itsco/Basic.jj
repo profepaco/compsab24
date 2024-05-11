@@ -15,17 +15,20 @@ public class Basic
 {
 
   private static AdministraVariables adminVariables;
+  private static GeneraCodigo generaCodigo;
   
   public static void main(String args []) throws ParseException
   {
     //Basic parser = new Basic(System.in);
     try {
       	adminVariables = new AdministraVariables();
+     	generaCodigo = new GeneraCodigo("salida.c");
 	    Basic parser = new Basic(
 	      new FileInputStream("entrada.txt"));
 	    System.out.println("Bienvenidos al compilador 603-SA");
 	    parser.principal();
 	    System.out.println("Compilo correctamente...");
+	    generaCodigo.terminarGeneracion();
   	}catch(FileNotFoundException fex) {
 		System.err.println(
 		  "No se puede abrir el archivo");
@@ -196,34 +199,53 @@ void gramaticaLeer()throws SemanticException: {
 
 void gramaticaAsignacion() throws SemanticException: {
 	Token id;
+	String tipoDato;
 }
 {
 	id = < ID >
 	{
 		Variable v = new Variable(id.image);
 		adminVariables.existeVariable(v);
+		tipoDato = adminVariables.getTipoDato(v);
 	}
-	< IGUAL > operacion()
+	< IGUAL > operacion(tipoDato)
 	{
 	  	adminVariables.inicializaVariable(v);
 	} 
 }
 
-void operacion() throws SemanticException: {
+void operacion(String tipoDato) throws SemanticException: {
+  String tipoDato2;
 } {
-	( valor() | opParentesis() )
-	( opAritmetico() ( valor() | opParentesis() ) )*
+	( tipoDato2 = valor() {
+		adminVariables.tiposDeDatosIncompatibles(tipoDato,tipoDato2);
+	  }| opParentesis(tipoDato) )
+	( opAritmetico(tipoDato)
+	( tipoDato2 = valor() {
+		adminVariables.tiposDeDatosIncompatibles(tipoDato,tipoDato2);
+	}| opParentesis(tipoDato) ) )*
 }
 
-void opAritmetico(): {
+void opAritmetico(String tipoDato)
+throws SemanticException: {
 } {
-	< SUMA > | < RESTA > | < MULTI > | < DIV >
-| < RESIDUO >
+	< SUMA >
+    | (
+	 < RESTA >
+	| < MULTI >
+	| < DIV >
+	| < RESIDUO >
+	)
+	{
+	 	adminVariables.
+	 	operacionInvalidaConCadenas(tipoDato);
+	}
 }
 
-void opParentesis() throws SemanticException: {
+void opParentesis(String tipoDato)
+throws SemanticException: {
 } {
-	< AP > operacion() < CP >
+	< AP > operacion(tipoDato) < CP >
 }
 
 void gramaticaIf() throws SemanticException: {
